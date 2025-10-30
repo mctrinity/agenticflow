@@ -1,0 +1,7 @@
+{
+  "steps": [
+    { "id": "moderation", "model": "llama_guard_3" },
+    { "id": "civility", "model": "contentguard" },
+    { "id": "sentiment", "model": "sentiment_analysis" }
+  ]
+}

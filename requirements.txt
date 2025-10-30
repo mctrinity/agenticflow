@@ -1,0 +1,17 @@
+# Core dependencies
+pandas==2.2.3
+numpy==2.1.1
+
+# Optional but recommended for pretty logging and dashboards
+rich==13.9.2
+
+# For potential API exposure (future expansion)
+fastapi==0.115.2
+uvicorn==0.30.6
+
+# If you ever add environment configs
+python-dotenv==1.0.1
+
+# If you use type hints and linting
+mypy==1.11.2
+black==24.10.0
