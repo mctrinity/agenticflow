@@ -157,4 +157,4 @@ Safe Ratio: 0.29
 
 ### 🪪 License
 
-MIT License — free to use, modify, and distribute.
+MIT License — Maki Dizon
