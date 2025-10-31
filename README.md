@@ -155,6 +155,21 @@ Safe Ratio: 0.29
 
 ---
 
+## 🧱 Development Notes
+
+* The `logs/` directory is automatically created and updated during moderation runs.
+
+* **Do not commit logs to Git.** Add this line to your `.gitignore`:
+
+  ```gitignore
+  logs/
+  *.zip
+  ```
+
+* This ensures local moderation history remains private and avoids unnecessary repo bloat.
+
+---
+
 ### 🪪 License
 
 MIT License — Maki Dizon

@@ -1,57 +1,30 @@
-# Python .gitignore
+# 🧠 AgenticFlow build & runtime files
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite3
 
 # Virtual environment
-
 venv/
-ENV/
-.env
+.env/
 
-# Byte-compiled / optimized / DLL files
+# FastAPI / Uvicorn reload cache
+*.pid
+*.db
 
-**pycache**/
-*.py[cod]
-*$py.class
-
-# Distribution / packaging
-
-build/
-dist/
-*.egg-info/
-.eggs/
+# Logs (daily moderation output)
+logs/
+*.zip
 
 # IDEs and editors
-
 .vscode/
 .idea/
 *.swp
-*.swo
-
-# Logs and caches
-
-*.log
-*.cache
-*.tmp
 
 # OS-specific files
-
 .DS_Store
 Thumbs.db
-
-# Jupyter / notebooks
-
-.ipynb_checkpoints/
-
-# Test and coverage reports
-
-htmlcov/
-.tox/
-.nox/
-.coverage
-*.cover
-coverage.xml
-.pytest_cache/
-
-# Misc
-
-*.bak
-*.old
