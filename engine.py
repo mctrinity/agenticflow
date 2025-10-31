@@ -1,6 +1,6 @@
 import json
 import re
-from rich import print  # for colorized logs
+from rich import print
 from models import llama_guard_moderate, contentguard_score, sentiment_analysis
 from logger import log_decision
 
@@ -13,21 +13,20 @@ MODEL_REGISTRY = {
 
 
 def decide(context):
-    """Smarter decision logic with nuanced thresholds."""
+    """Simplified moderation: allow, warn, or block."""
     mod = context["results"]["moderation"]
     civ = context["results"]["civility"]["civility_score"]
     sent = context["results"]["sentiment"]["sentiment"]
     text = context["text"].lower()
 
-    # 🔒 1️⃣ Handle unsafe content categories
+    # 1️⃣ Unsafe → block
     if mod.get("unsafe"):
-        if mod["categories"].get("violence") or mod["categories"].get("sexual"):
-            print("[bold magenta]🧾 Escalate:[/bold magenta] critical safety category triggered.")
-            return "escalate"
-        print("[bold red]⛔ Block:[/bold red] unsafe content detected.")
+        categories = [k for k, v in mod.get("categories", {}).items() if v]
+        reason = ", ".join(categories) if categories else "unspecified"
+        print(f"[bold red]⛔ Block:[/bold red] unsafe content detected ({reason}).")
         return "block"
 
-    # 🧮 2️⃣ Profanity detection
+    # 2️⃣ Profanity
     mild_profanity = re.findall(r"\b(hell|damn|crap|stupid|idiot|sucks)\b", text)
     severe_profanity = re.findall(r"\b(fuck|shit|bitch|asshole|bastard)\b", text)
 
@@ -39,21 +38,22 @@ def decide(context):
         print("[bold yellow]⚠️ Warn:[/bold yellow] mild profanity detected.")
         return "warn"
 
-    # 🤝 3️⃣ Civility & sentiment thresholds
-    if civ < 0.7:
-        print("[bold yellow]🕵️ Review:[/bold yellow] civility too low.")
-        return "review"
+    # 3️⃣ Tone & civility
+    if civ < 0.6:
+        print("[bold red]⛔ Block:[/bold red] very low civility score.")
+        return "block"
 
-    if sent == "negative" and civ < 0.9:
-        print("[bold yellow]🕵️ Review:[/bold yellow] negative tone with borderline civility.")
-        return "review"
+    if sent == "negative" and civ < 0.85:
+        print("[bold yellow]⚠️ Warn:[/bold yellow] negative tone detected.")
+        return "warn"
 
-    # ✅ 4️⃣ Safe content
+    # 4️⃣ Default: allow
     print("[bold green]✅ Allow:[/bold green] clean and civil.")
     return "allow"
 
 
 def run_pipeline(pipeline_path, input_text):
+    """Runs all models sequentially and logs the decision."""
     with open(pipeline_path) as f:
         pipeline = json.load(f)
 
@@ -67,19 +67,18 @@ def run_pipeline(pipeline_path, input_text):
         result = func(context["text"])
         context["results"][step["id"]] = result
 
-        # Dynamic input chaining
+        # Dynamic chaining
         if "modified_text" in result:
             context["text"] = result["modified_text"]
 
-        # Unsafe audit tracking
+        # Unsafe tracking
         if "unsafe" in result and result["unsafe"]:
             print("⚠️ Unsafe content detected — continuing in audit mode.")
             context["unsafe_detected"] = True
 
-    # 🧠 Decision Policy Layer
+    # Decision & logging
     context["decision"] = decide(context)
-
-    # Log results to audit file
+    context["moderation_engine"] = pipeline["steps"][0]["model"]
     log_decision(context)
 
     return context

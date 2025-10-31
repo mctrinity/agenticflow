@@ -4,14 +4,70 @@
     <meta charset="UTF-8">
     <title>AgenticFlow Moderation Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script>
+        function fillText(text) {
+            document.querySelector("textarea[name='text']").value = text;
+            hideWarning();
+        }
+
+        async function refreshSummary() {
+            try {
+                const res = await fetch("/summary");
+                const html = await res.text();
+                document.getElementById("summary").innerHTML = html;
+            } catch (err) {
+                console.error("Summary refresh failed:", err);
+            }
+        }
+
+        // Auto-refresh every 10 seconds
+        setInterval(refreshSummary, 10000);
+        window.onload = refreshSummary;
+
+        function clearText() {
+            document.querySelector("textarea[name='text']").value = '';
+            hideWarning();
+        }
+
+        function showWarning(msg) {
+            const warningDiv = document.getElementById("warning-message");
+            warningDiv.innerText = msg;
+            warningDiv.style.display = "block";
+        }
+
+        function hideWarning() {
+            const warningDiv = document.getElementById("warning-message");
+            warningDiv.style.display = "none";
+        }
+
+        function validateForm() {
+            const textarea = document.querySelector("textarea[name='text']");
+            if (!textarea.value.trim()) {
+                showWarning("⚠️ Please enter text before running moderation.");
+                return false;
+            }
+            hideWarning();
+            return true;
+        }
+    </script>
+    <style>
+        #warning-message {
+            display: none;
+            background-color: #ffecec;
+            color: #d8000c;
+            border: 1px solid #f5aca6;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
     <h1>🤖 AgenticFlow Moderation Dashboard</h1>
 
-    <div id="summary">
-        {{ summary_html | safe }}
-    </div>
+    <div id="summary">{{ summary_html | safe }}</div>
 
     <div class="demo">
         <h3>🧪 Try Demo Inputs</h3>
@@ -26,29 +82,19 @@
             ⚠️ Warn
         </button>
 
-        <button class="review"
-            onclick="fillText('The host kept interrupting, and it got a bit annoying after a while.')">
-            🕵️ Review
-        </button>
-
         <button class="block"
             onclick="fillText('I hate this show; the host is so dumb and awful.')">
             ⛔ Block
         </button>
-
-        <button class="escalate"
-            onclick="fillText('Let’s attack the guest; they deserve it.')">
-            🧾 Escalate
-        </button>
     </div>
 
-    <form action="/moderate" method="post">
-        <textarea name="text" rows="6" placeholder="Enter text to moderate..."></textarea><br>
+    <!-- ⚠️ Inline Warning Message -->
+    <div id="warning-message"></div>
 
-        <div class="button-row">
-            <button type="submit">Run Moderation</button>
-            <button type="button" class="secondary" onclick="clearInput()">Clear</button>
-        </div>
+    <form id="moderationForm" action="/moderate" method="post" onsubmit="return validateForm()">
+        <textarea name="text" rows="6" placeholder="Enter text to moderate..."></textarea><br>
+        <button type="submit">Run Moderation</button>
+        <button type="button" onclick="clearText()">Clear</button>
     </form>
 
     {{ result_html | safe }}
@@ -56,8 +102,5 @@
     <div class="footer">
         AgenticFlow © 2025 — Autonomous Content Safety System
     </div>
-
-    <!-- ✅ Load your external JS file -->
-    <script src="/static/script.js"></script>
 </body>
 </html>

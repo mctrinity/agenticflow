@@ -63,9 +63,6 @@ button:hover {
 .block {
     background-color: #e84118; /* red */
 }
-.escalate {
-    background-color: #9b59b6; /* purple */
-}
 
 pre {
     background-color: #f0f0f0;
@@ -134,9 +131,6 @@ pre {
 .demo button.block {
     background-color: #e84118 !important;
 }
-.demo button.escalate {
-    background-color: #9b59b6 !important;
-}
 
 /* Hover glow for demo buttons */
 .demo button:hover {
@@ -186,4 +180,24 @@ button.secondary {
 
 button.secondary:hover {
     background-color: #95a5a6;
+}
+
+.engine-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.engine-badge.openai {
+    background-color: #3498db; /* Blue */
+}
+
+.engine-badge.llama {
+    background-color: #9b59b6; /* Purple */
+}
+
+.engine-badge.other {
+    background-color: #95a5a6; /* Gray */
 }

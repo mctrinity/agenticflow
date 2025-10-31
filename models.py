@@ -1,61 +1,99 @@
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
 import re
 
+# Load .env variables
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+USE_OPENAI = os.getenv("USE_OPENAI_MODERATION", "True").lower() == "true"
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+
+# ----------------------------
+# 🧩 OpenAI Moderation
+# ----------------------------
+def openai_moderate(text: str):
+    """Use OpenAI's omni-moderation-latest model."""
+    try:
+        response = client.moderations.create(
+            model="omni-moderation-latest",
+            input=text
+        )
+        result = response.results[0]
+        return {
+            "model": "omni-moderation-latest",
+            "unsafe": result["flagged"],
+            "categories": result["categories"]
+        }
+    except Exception as e:
+        return {
+            "model": "omni-moderation-latest",
+            "error": str(e),
+            "unsafe": False,
+            "categories": {}
+        }
+
+
+# ----------------------------
+# 🧩 Llama Guard (local fallback)
+# ----------------------------
 def llama_guard_moderate(text: str):
-    """Simulated Llama Guard moderation model"""
-    categories = {
-        "hate_speech": bool(re.search(r"\bhate\b", text, re.I)),
-        "violence": bool(re.search(r"\b(kill|attack|fight)\b", text, re.I)),
-        "sexual": bool(re.search(r"\b(sex|porn|nude)\b", text, re.I))
-    }
-    unsafe = any(categories.values())
+    """Simulated Llama Guard moderation for local/offline fallback."""
+    keywords = ["hate", "violence", "attack", "awful", "kill"]
+    unsafe = any(word in text.lower() for word in keywords)
     return {
         "model": "llama_guard_3",
         "unsafe": unsafe,
-        "categories": categories
+        "categories": {"violence": unsafe, "hate_speech": unsafe, "sexual": False}
     }
 
+
+# ----------------------------
+# 🧠 Civility (mock or local)
+# ----------------------------
+import re
+
 def contentguard_score(text: str):
-    """Enhanced civility scoring with tone detection."""
-    rude_words = ["idiot", "stupid", "hate", "ugly", "dumb"]
-    negative_tone = ["annoying", "boring", "bad", "terrible", "awful", "interrupting"]
+    """
+    Heuristic civility scorer.
+    1. start from 1.0
+    2. deduct if insulting / aggressive
+    3. deduct if profanity
+    """
 
-    lower_text = text.lower()
-    rude_hits = sum(lower_text.count(w) for w in rude_words)
-    tone_hits = sum(lower_text.count(w) for w in negative_tone)
+    lowered = text.lower()
+    score = 1.0  # assume polite
 
-    total_hits = rude_hits + tone_hits
-    word_count = max(len(text.split()), 1)
-    civility = max(0, 1 - (total_hits / word_count))
+    # harsh insult / abusive language
+    severe_toxic_words = [
+        "idiot", "stupid", "dumb", "awful", "hate",
+        "trash", "shut up", "kill yourself", "attack", "hurt"
+    ]
+    if any(word in lowered for word in severe_toxic_words):
+        score -= 0.6  # heavy penalty
 
-    cleaned_text = text
-    for w in rude_words:
-        cleaned_text = cleaned_text.replace(w, "[redacted]")
+    # mild frustration / irritation
+    mild_rude_phrases = [
+        "annoying", "what the hell", "wth", "wtf", "this sucks",
+        "so rude", "stop interrupting", "kind of dumb"
+    ]
+    if any(phrase in lowered for phrase in mild_rude_phrases):
+        score -= 0.3
+
+    # floor at 0.0, cap at 1.0
+    score = max(0.0, min(score, 1.0))
 
     return {
         "model": "contentguard",
-        "civility_score": round(civility, 2),
-        "modified_text": cleaned_text
+        "civility_score": round(score, 2)
     }
 
-
+# ----------------------------
+# 😊 Sentiment (mock for now)
+# ----------------------------
 def sentiment_analysis(text: str):
-    """Enhanced sentiment analyzer with more nuance."""
-    positive_words = ["love", "great", "good", "awesome", "amazing", "fantastic", "excellent"]
-    negative_words = ["hate", "bad", "terrible", "awful", "boring", "annoying", "disappointing", "interrupting"]
-
-    text_lower = text.lower()
-    pos_score = sum(text_lower.count(w) for w in positive_words)
-    neg_score = sum(text_lower.count(w) for w in negative_words)
-
-    if pos_score > neg_score:
-        sentiment = "positive"
-    elif neg_score > pos_score:
-        sentiment = "negative"
-    else:
-        sentiment = "neutral"
-
-    return {
-        "model": "sentiment_analysis",
-        "sentiment": sentiment,
-        "scores": {"positive": pos_score, "negative": neg_score}
-    }
+    sentiment = "positive" if "good" in text.lower() else "negative" if "hate" in text.lower() else "neutral"
+    return {"model": "sentiment_v1", "sentiment": sentiment}

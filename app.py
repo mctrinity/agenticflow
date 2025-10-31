@@ -30,7 +30,7 @@ def get_today_summary():
                 "total": int(row["total"]),
                 "allowed": int(row["allowed"]),
                 "blocked": int(row["blocked"]),
-                "reviewed": int(row["reviewed"]),
+                "warned": int(row.get("warned", 0)),
                 "safe_ratio": float(row["safe_ratio"]),
             }
     return None
@@ -41,12 +41,31 @@ async def index(request: Request):
     """Render the main page."""
     summary = get_today_summary()
     summary_html = generate_summary_html() if summary else "<div class='summary'><p>No moderation activity yet today.</p></div>"
-    return templates.TemplateResponse("index.html", {"request": request, "summary_html": summary_html, "result_html": ""})
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "summary_html": summary_html, "result_html": ""}
+    )
 
 
 @app.post("/moderate", response_class=HTMLResponse)
 async def moderate(request: Request, text: str = Form(...)):
-    """Run the moderation pipeline."""
+    """Run the moderation pipeline with input validation."""
+    text = text.strip()
+
+    # 🛑 Prevent empty submissions
+    if not text:
+        summary_html = generate_summary_html()
+        result_html = """
+        <div class="result" style="color: red; padding: 10px; border: 1px solid #f88; background: #fff3f3; border-radius: 8px;">
+            ⚠️ Please enter text before running moderation.
+        </div>
+        """
+        return templates.TemplateResponse(
+            "index.html",
+            {"request": request, "summary_html": summary_html, "result_html": result_html}
+        )
+
+    # ✅ Run moderation pipeline
     result = run_pipeline("pipeline.json", text)
     decision = result["decision"].lower()
     civility = result["results"]["civility"]["civility_score"]
@@ -68,7 +87,10 @@ async def moderate(request: Request, text: str = Form(...)):
     """
 
     summary_html = generate_summary_html()
-    return templates.TemplateResponse("index.html", {"request": request, "summary_html": summary_html, "result_html": result_html})
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "summary_html": summary_html, "result_html": result_html}
+    )
 
 
 @app.get("/summary", response_class=HTMLResponse)

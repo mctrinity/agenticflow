@@ -12,6 +12,9 @@ __pycache__/
 venv/
 .env/
 
+# Environment variables
+.env
+
 # FastAPI / Uvicorn reload cache
 *.pid
 *.db
