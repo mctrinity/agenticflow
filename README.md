@@ -1,161 +1,160 @@
-# 🤖 AgenticFlow
+# 🤖 AgenticFlow Moderation Dashboard
 
-**AgenticFlow** is an *agentic moderation and governance system* that autonomously evaluates, scores, and decides how to handle user-generated content.
-It uses a modular pipeline of AI reasoning models (moderation → civility → sentiment) to ensure safe, responsible, and brand-aligned interactions.
-
----
-
-## 🧠 Overview
-
-AgenticFlow isn't just a moderation tool — it's an **AI agent**.
-It **observes**, **analyzes**, and **acts** — applying multi-model reasoning and policy rules to make contextual decisions such as:
-
-* ✅ Allowing safe content
-* 🕵️ Sending borderline cases for human review
-* ⛔ Blocking unsafe or offensive material
-
-Each moderation event is logged, summarized, and auditable — ensuring transparency and accountability.
+An interactive FastAPI-based web dashboard for testing and visualizing AI-driven **content moderation pipelines**. It supports multiple moderation outcomes (✅ Allow, ⚠️ Warn, 🕵️ Review, ⛔ Block, 🧾 Escalate), automatic daily logging, and live summary updates.
 
 ---
 
-## 🧱 Features
+## 🚀 Features
 
-| Capability                    | Description                                                               |
-| ----------------------------- | ------------------------------------------------------------------------- |
-| 🧹 **Modular Pipeline**       | Chains multiple models dynamically (`moderation → civility → sentiment`). |
-| 🧠 **Agentic Reasoning**      | Makes context-aware decisions (allow/review/block).                       |
-| 📊 **Audit Logging**          | Saves every decision in JSONL format.                                     |
-| 🗓️ **Daily Summaries**       | Generates `summary.csv` files per day automatically.                      |
-| ⚖️ **Policy Rules**           | Decisions based on civility + sentiment thresholds.                       |
-| 🧮 **Dynamic Input Chaining** | Each model’s output feeds into the next step.                             |
-| �� **Transparency-First**     | All actions logged, summarized, and traceable.                            |
+* **FastAPI + Jinja2 UI** — lightweight and reactive web interface.
+* **Live Moderation Pipeline** — runs text through multi-model moderation (e.g., LlamaGuard, ContentGuard, sentiment analysis).
+* **Automatic Logging** — JSONL audit logs with per-day summaries.
+* **Auto-updating Dashboard** — live stats refresh every 10 seconds.
+* **CSV Summary Generation** — each moderation decision updates `summary.csv`.
+* **Warn & Escalate support** — extended moderation categories.
+* **Simple UI Actions** — includes demo inputs and a Clear button.
 
 ---
 
-## ⚙️ Tech Stack
+## 🧩 Tech Stack
 
-* **Language:** Python 3.11+
-* **Core Libs:** `pandas`, `numpy`
-* **Optional Enhancements:** `rich`, `fastapi`, `uvicorn`
-* **Structure:** Modular (engine/models/logger)
-* **Data Format:** JSON + JSONL for logs
+| Component                  | Purpose                           |
+| -------------------------- | --------------------------------- |
+| **FastAPI**                | Web server and routing            |
+| **Jinja2**                 | HTML templating engine            |
+| **pandas**                 | CSV and summary aggregation       |
+| **JavaScript (vanilla)**   | Live updates and interactions     |
+| **CSS (static/style.css)** | Modern, minimal dashboard styling |
 
 ---
 
-## 🚀 Getting Started
-
-### 1️⃣ Setup Environment
+## 🛠️ Installation
 
 ```bash
-git clone https://github.com/yourusername/agenticflow.git
-cd AgenticFlow
-python -m venv venv
-venv\Scripts\activate   # (on macOS/Linux: source venv/bin/activate)
-pip install -r requirements.txt
+# Clone the repository
+ git clone https://github.com/yourusername/AgenticFlow.git
+ cd AgenticFlow
+
+# Create a virtual environment
+ python -m venv venv
+ source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+ pip install -r requirements.txt
+
+# Run the app
+ uvicorn app:app --reload
 ```
 
-### 2️⃣ Run the Pipeline
+Then open your browser to:
+👉 **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
 
-```bash
-python run.py
+---
+
+## 💡 Usage
+
+### 1. Try Demo Inputs
+
+Use the built-in buttons to auto-fill example moderation cases:
+
+* ✅ **Allow** — safe, civil text
+* ⚠️ **Warn** — mild profanity or tone issues
+* 🕵️ **Review** — borderline civility or unclear tone
+* ⛔ **Block** — unsafe or hateful content
+* 🧾 **Escalate** — critical safety issue detected
+
+### 2. Run Your Own Input
+
+Enter any text in the input box and click **Run Moderation**.
+The results will display inline, showing civility, sentiment, and moderation scores.
+
+### 3. Clear Input
+
+Click **Clear** to instantly wipe the textarea.
+
+### 4. Live Summary
+
+The summary section auto-refreshes every 10 seconds and displays:
+
+* Total moderated texts today
+* Count of each decision type
+* Safe ratio
+* Timestamp of last update
+
+---
+
+## 📁 Log Structure
+
+Logs are stored per day under the `/logs/` directory:
+
+```
+logs/
+ ├── 2025-10-31/
+ │   ├── moderation_log.jsonl   # All moderation entries
+ │   ├── summary.csv            # Daily summary statistics
+ │   └── ...
 ```
 
-### 3️⃣ Sample Output
+The logger automatically compresses older logs into ZIP archives.
+
+---
+
+## ⚙️ Key Files
+
+| File                   | Description                                                 |
+| ---------------------- | ----------------------------------------------------------- |
+| `app.py`               | FastAPI routes, moderation handling, and UI rendering       |
+| `logger.py`            | Handles log writing, summary generation, and HTML rendering |
+| `templates/index.html` | Main dashboard UI layout                                    |
+| `static/style.css`     | Custom dashboard styling                                    |
+| `static/script.js`     | Handles summary refresh and input clearing                  |
+| `pipeline.json`        | Defines moderation pipeline configuration                   |
+
+---
+
+## 🧾 Example Output
 
 ```
-[Running step: moderation] → llama_guard_3
-[Running step: civility] → contentguard
-[Running step: sentiment] → sentiment_analysis
-🗒️ Logged decision → logs\2025-10-31\moderation_log.jsonl
-📊 Today → 5 total | 4 ✅ allowed | 0 ⛔ blocked | 1 🕵️ reviewed | Safe Ratio: 0.8
+Decision: REVIEW
+Input: The host kept interrupting, and it got a bit annoying after a while.
+
+Civility Score: 0.85
+Sentiment: negative
+Unsafe Detected: False
+```
+
+**📊 Summary Example:**
+
+```
+📊 Moderation Summary — 2025-10-31
+Total: 7
+✅ Allowed: 2
+⚠️ Warned: 2
+🕵️ Reviewed: 1
+⛔ Blocked: 1
+🧾 Escalated: 1
+Safe Ratio: 0.29
+⏱️ Last Updated: 09:42:10
 ```
 
 ---
 
-## 🧮 Decision Policy
+## 🧰 Future Enhancements
 
-```python
-if moderation.get("unsafe", False):
-    decision = "block"
-elif civility < 0.8 or sentiment == "negative":
-    decision = "review"
-else:
-    decision = "allow"
-```
-
-### Outcomes
-
-| Decision       | Meaning                              |
-| -------------- | ------------------------------------ |
-| ✅ **Allow**    | Safe and civil content               |
-| 🕵️ **Review** | Borderline tone or mild negativity   |
-| ⛔ **Block**    | Unsafe or explicitly harmful content |
+* [ ] Add API endpoints for historical stats
+* [ ] Enable filtering & search by decision type
+* [ ] Add charts using Chart.js or Recharts
+* [ ] Multi-user or team dashboards
+* [ ] Integration with external moderation APIs
 
 ---
 
-## 🗂️ Folder Structure
+## 🧑‍💻 Author
 
-```
-AgenticFlow/
-├── engine.py
-├── models.py
-├── logger.py
-├── pipeline.json
-├── run.py
-├── requirements.txt
-├── .gitignore
-├── logs/
-│   └── YYYY-MM-DD/
-│       ├── moderation_log.jsonl
-│       └── summary.csv
-└── venv/
-```
+**AgenticFlow Project** — AI-driven safety and content moderation tools.
 
 ---
 
-## 🦯 Roadmap
+### 🪪 License
 
-| Phase                     | Goal                                                    |
-| ------------------------- | ------------------------------------------------------- |
-| 1️⃣ **Weighted Scoring**  | Combine civility + sentiment into a unified risk index. |
-| 2️⃣ **Policy Config**     | Externalize thresholds into a JSON config.              |
-| 3️⃣ **API Agent**         | Serve moderation via REST (`/api/moderate`).            |
-| 4️⃣ **Dashboard UI**      | Visualize logs and summaries in real time.              |
-| 5️⃣ **Adaptive Learning** | Auto-tune civility and sentiment thresholds.            |
-
----
-
-## 🦄 Example Input / Output
-
-### Input
-
-```text
-The discussion was okay, but the guest kept interrupting and it was kind of annoying.
-```
-
-### Output
-
-```json
-{
-  "text": "The discussion was okay, but the guest kept interrupting and it was kind of annoying.",
-  "results": {
-    "moderation": {"unsafe": false},
-    "civility": {"civility_score": 0.87},
-    "sentiment": {"sentiment": "negative"}
-  },
-  "decision": "review"
-}
-```
-
----
-
-## 🧹 Credits
-
-Created as a modular foundation for **agentic content safety systems** —
-built to power responsible AI deployment, transparency, and compliance.
-
----
-
-## �� License
-
-MIT License © 2025 Maki Dizon
+MIT License — free to use, modify, and distribute.
