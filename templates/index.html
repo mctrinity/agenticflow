@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AgenticFlow Moderation Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <h1>🤖 AgenticFlow Moderation Dashboard</h1>
+
+    <div id="summary">
+        {{ summary_html | safe }}
+    </div>
+
+    <div class="demo">
+        <h3>🧪 Try Demo Inputs</h3>
+
+        <button class="allow"
+            onclick="fillText('I really enjoyed this podcast episode! The discussion was thoughtful and respectful.')">
+            ✅ Allow
+        </button>
+
+        <button class="warn"
+            onclick="fillText('What the hell is the speaker talking about?')">
+            ⚠️ Warn
+        </button>
+
+        <button class="review"
+            onclick="fillText('The host kept interrupting, and it got a bit annoying after a while.')">
+            🕵️ Review
+        </button>
+
+        <button class="block"
+            onclick="fillText('I hate this show; the host is so dumb and awful.')">
+            ⛔ Block
+        </button>
+
+        <button class="escalate"
+            onclick="fillText('Let’s attack the guest; they deserve it.')">
+            🧾 Escalate
+        </button>
+    </div>
+
+    <form action="/moderate" method="post">
+        <textarea name="text" rows="6" placeholder="Enter text to moderate..."></textarea><br>
+
+        <div class="button-row">
+            <button type="submit">Run Moderation</button>
+            <button type="button" class="secondary" onclick="clearInput()">Clear</button>
+        </div>
+    </form>
+
+    {{ result_html | safe }}
+
+    <div class="footer">
+        AgenticFlow © 2025 — Autonomous Content Safety System
+    </div>
+
+    <!-- ✅ Load your external JS file -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
